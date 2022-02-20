@@ -124,26 +124,30 @@ module.exports = (() => {
           const http = require("http");
           const PORT = 3030;
           const btnSelector = "section[class^='panels'] button[role='switch']";
-          const getMuteBtn = () => document.querySelector(btnSelector);
-          let server = null;
-
-          let dirtiness = 0;
-          const timer = setInterval(() => {
-            if (dirtiness > 0) {
-              dirtiness--;
-              if (dirtiness === 0) {
-                const btn = getMuteBtn();
-                if (btn && btn.ariaChecked === "false") {
-                  btn.click();
-                }
-              }
-            }
-          }, 50);
 
           return class PTTServer extends Plugin {
+            server = null;
+            timer = null;
+            dirtiness = 0;
+            
+            getMuteBtn() {
+              return document.querySelector(btnSelector);
+            }
+            
             onStart() {
-              const muteBtn = getMuteBtn();
-              server = http.createServer((req, res) => {
+              this.timer = setInterval(() => {
+                if (this.dirtiness > 0) {
+                  this.dirtiness--;
+                  if (this.dirtiness === 0) {
+                    const btn = this.getMuteBtn();
+                    if (btn && btn.ariaChecked === "false") {
+                      btn.click();
+                    }
+                  }
+                }
+              }, 50);
+              this.server = http.createServer((req, res) => {
+                const muteBtn = this.getMuteBtn();
                 switch (req.url) {
                   case "/start":
                     if (muteBtn && muteBtn.ariaChecked === "true") {
@@ -163,8 +167,8 @@ module.exports = (() => {
                     break;
                   case "/smart":
                     // initially set dirtiness higher because mouse event takes time to ramp up
-                    if (dirtiness === 0) dirtiness = 15;
-                    else dirtiness = 5;
+                    if (this.dirtiness === 0) this.dirtiness = 15;
+                    else this.dirtiness = 5;
 
                     if (muteBtn && muteBtn.ariaChecked === "true") {
                       muteBtn.click();
@@ -178,14 +182,14 @@ module.exports = (() => {
                 res.end();
               });
 
-              server.listen(PORT, () => {
+              this.server.listen(PORT, () => {
                 log(`PTT server listening on port: ${PORT}`);
               });
             }
 
             onStop() {
-              clearInterval(timer);
-              server.close(() => {
+              clearInterval(this.timer);
+              this.server.close(() => {
                 log("PTT server stopped");
               });
             }
