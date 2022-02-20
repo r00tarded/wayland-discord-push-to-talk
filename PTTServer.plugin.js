@@ -5,7 +5,7 @@
  * @donate undefined
  * @patreon undefined
  * @website https://github.com/stanley2058/wayland-discord-push-to-talk
- * @source undefined
+ * @source https://github.com/stanley2058/wayland-discord-push-to-talk/blob/main/PTTServer.plugin.js
  */
 /*@cc_on
 @if (@_jscript)
@@ -46,7 +46,7 @@ module.exports = (() => {
       version: "1.0.0",
       description: "A dirty workaround to achieve PTT on wayland",
       github: "https://github.com/stanley2058/wayland-discord-push-to-talk",
-      github_raw: "",
+      github_raw: "https://raw.githubusercontent.com/stanley2058/wayland-discord-push-to-talk/main/PTTServer.plugin.js",
     },
     changelog: [],
   };
