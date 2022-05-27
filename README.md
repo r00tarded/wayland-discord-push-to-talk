@@ -14,6 +14,7 @@ Since Wayland does not allow global keybindings, this plugin spins up a Node.js 
    e.g. This is my setup in KDE, I mapped one of my mouse buttons to the `F14` key, and then map `F14` to send a `curl` request to `localhost:3000/smart`.
    ![](./img/kde_shortcuts.png)
    KDE does not allow bindings on `keydown` and `keyup`, so I have to do it like this, press and hold the button will cause the action to be run repeatedly. In this case, it will cause repeating `curl` requests to the server, the `/smart` endpoint is designed specifically to handle this.
+   
    *Update:* Now I included a debounce script, setup an action on keypress to run the script will also do the job.
 
 5. Finally, make sure your Discord is in **Voice Activity** mode.
