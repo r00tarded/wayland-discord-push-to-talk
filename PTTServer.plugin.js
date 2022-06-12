@@ -46,11 +46,12 @@ module.exports = (() => {
       version: "1.0.0",
       description: "A dirty workaround to achieve PTT on wayland",
       github: "https://github.com/stanley2058/wayland-discord-push-to-talk",
-      github_raw: "https://raw.githubusercontent.com/stanley2058/wayland-discord-push-to-talk/main/PTTServer.plugin.js",
+      github_raw:
+        "https://raw.githubusercontent.com/stanley2058/wayland-discord-push-to-talk/main/PTTServer.plugin.js",
     },
     changelog: [],
   };
-  
+
   // these two function are copied from Arashiryuu's plugin
   // check it out: https://github.com/Arashiryuu/crap/blob/master/ToastIntegrated/HideServersChannelsRedux/HideServersChannelsRedux.plugin.js
   const log = function () {
@@ -124,16 +125,19 @@ module.exports = (() => {
           const http = require("http");
           const PORT = 3030;
           const btnSelector = "section[class^='panels'] button[role='switch']";
+          const avatarSelector =
+            "section[class^='panels'] div[data-user-id] svg";
 
           return class PTTServer extends Plugin {
             server = null;
             timer = null;
+            observer = null;
             dirtiness = 0;
-            
+
             getMuteBtn() {
               return document.querySelector(btnSelector);
             }
-            
+
             onStart() {
               this.timer = setInterval(() => {
                 if (this.dirtiness > 0) {
@@ -142,10 +146,15 @@ module.exports = (() => {
                     const btn = this.getMuteBtn();
                     if (btn && btn.ariaChecked === "false") {
                       btn.click();
+                      if (this.observer) {
+                        this.observer.disconnect();
+                        this.observer = null;
+                      }
                     }
                   }
                 }
               }, 50);
+
               this.server = http.createServer((req, res) => {
                 const muteBtn = this.getMuteBtn();
                 switch (req.url) {
@@ -166,13 +175,31 @@ module.exports = (() => {
                     res.writeHead(200);
                     break;
                   case "/smart":
-                    // initially set dirtiness higher because mouse event takes time to ramp up
-                    if (this.dirtiness === 0) this.dirtiness = 15;
-                    else this.dirtiness = 5;
+                    this.dirtiness = 30;
 
                     if (muteBtn && muteBtn.ariaChecked === "true") {
                       muteBtn.click();
                     }
+
+                    if (!this.observer) {
+                      this.observer = new MutationObserver((e) => {
+                        if (e[0].addedNodes.length > 0) {
+                          // talking
+                          this.dirtiness = 0;
+                        } else {
+                          // stop talking
+                          this.dirtiness = 15;
+                        }
+                      });
+                      this.observer.observe(
+                        document.querySelector(avatarSelector),
+                        {
+                          subtree: true,
+                          childList: true,
+                        }
+                      );
+                    }
+
                     res.writeHead(200);
                     break;
                   default:
